@@ -21,7 +21,7 @@ class MVNX:
                  centerOfMass=None, mapping=None, sensors=None, segments=None, joints=None, \
                  root=None, mvn=None, comment=None, subject=None, version=None, build=None, label=None, \
                  frameRate=None, segmentCount=None, recordingDate=None, configuration=None, userScenario=None, \
-                 securityCode=None, modality=None, time=None, index=None, timecode=None, ms=None):
+                 securityCode=None, modality=None, time=None, index=None, timecode=None, ms=None, marker=None):
         if orientation is None:
             self.orientation = []
         if position is None:
@@ -70,7 +70,15 @@ class MVNX:
                             "jointAngle": 10,
                             "jointAngleXZY": 11,
                             "jointAngleErgo": 12,
-                            "centerOfMass": 13}
+                            "centerOfMass": 13,
+                            "marker": 14}
+
+        if marker is None:
+            self.marker = {}
+            a = 1
+        else:
+            self.marker = marker
+
         if time is None:
             self.time = []
         else:
@@ -250,6 +258,21 @@ class MVNX:
             return self.joints
         else:
             return None
+
+    def parse_marker(self):
+
+        self.marker = {}
+        # frames = self.root[2][6]
+        frames = self.subject.find(self.ns + 'frames')[3:]
+        # TODO if has marker
+        for frame in tqdm(frames):
+            marker_text = frame.find(self.ns + 'marker')
+            if marker_text is not None:
+                i = frame.attrib['index']
+
+                self.marker[i] = marker_text.text
+
+        return self.marker
 
     def parse_all(self):
         for key in tqdm(self.mapping.keys()):
