@@ -283,6 +283,7 @@ class MVNX:
         self.parse_sensors()
         self.parse_timecode()
         self.parse_ms()
+        self.parse_marker()
 
     def save_to_HDF5(self, filepath):
         """Create an HDF5 file from an MVNX object.
