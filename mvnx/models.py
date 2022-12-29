@@ -136,13 +136,9 @@ class MVNX:
         self.root = tree.getroot()
         self.ns = self.namespace(self.root)
         self.mvn = self.root.find(self.ns + 'mvn')
-        # self.version = self.root[0].attrib['version']
         self.version = self.mvn.attrib['version']
-        # self.build = self.root[0].attrib['build']
         self.build = self.mvn.attrib['build']
-        #self.comment = self.root[1].text
         self.comment = self.root.find(self.ns + 'comment').text
-        #self.label = self.root[2].attrib['label']
         self.subject = self.root.find(self.ns + 'subject')
         self.label = self.subject.attrib['label']
         self.frameRate = self.subject.attrib['frameRate']
@@ -174,7 +170,6 @@ class MVNX:
         """
 
         holding_list = []
-        #frames = self.root[2][6]
         frames = self.subject.find(self.ns + 'frames')
         for frame in tqdm(frames[3:]):
             for child in frame[self.mapping[modality]:self.mapping[modality] + 1]:
@@ -223,8 +218,6 @@ class MVNX:
             return self.parse_modality(arg)
 
     def parse_sensors(self):
-        #sensors = self.root[2][2]
-
         sensors =  self.subject.find(self.ns + 'sensors')
         if sensors:
 
@@ -235,8 +228,6 @@ class MVNX:
             return None
 
     def parse_segments(self):
-        #segments = self.root[2][1]
-
         segments = self.subject.find(self.ns + 'segments')
 
         if segments:
@@ -247,8 +238,6 @@ class MVNX:
             return None
 
     def parse_joints(self):
-
-        #joints = self.root[2][3]
 
         joints = self.subject.find(self.ns + 'joints')
 
@@ -262,7 +251,6 @@ class MVNX:
     def parse_marker(self):
 
         self.marker = {}
-        # frames = self.root[2][6]
         frames = self.subject.find(self.ns + 'frames')[3:]
         # TODO if has marker
         for frame in tqdm(frames):
