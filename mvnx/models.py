@@ -14,14 +14,14 @@ class MVNX:
     Can also be used as a command line tool.
     """
 
-    def __init__(self, path, orientation=None, position=None, velocity=None, \
-                 acceleration=None, angularVelocity=None, angularAcceleration=None, \
-                 footContacts=None, sensorFreeAcceleration=None, sensorMagneticField=None, \
-                 sensorOrientation=None, jointAngle=None, jointAngleXZY=None, jointAngleErgo=None, \
-                 centerOfMass=None, mapping=None, sensors=None, segments=None, joints=None, \
-                 root=None, mvn=None, comment=None, subject=None, version=None, build=None, label=None, \
-                 frameRate=None, segmentCount=None, recordingDate=None, configuration=None, userScenario=None, \
-                 securityCode=None, modality=None, time=None, index=None, timecode=None, ms=None, marker=None):
+    def __init__(self, path, orientation=None, position=None, velocity=None,
+                 acceleration=None, angularVelocity=None, angularAcceleration=None,
+                 footContacts=None, sensorFreeAcceleration=None, sensorMagneticField=None,
+                 sensorOrientation=None, jointAngle=None, jointAngleXZY=None, jointAngleErgo=None,
+                 centerOfMass=None, mapping=None, sensors=None, segments=None, joints=None,
+                 root=None, mvn=None, comment=None, subject=None, version=None, build=None, label=None,
+                 frameRate=None, segmentCount=None, recordingDate=None, configuration=None, userScenario=None,
+                 securityCode=None, modality=None, time=None, index=None, timecode=None, ms=None):
         if orientation is None:
             self.orientation = []
         if position is None:
@@ -70,15 +70,7 @@ class MVNX:
                             "jointAngle": 10,
                             "jointAngleXZY": 11,
                             "jointAngleErgo": 12,
-                            "centerOfMass": 13,
-                            "marker": 14}
-
-        if marker is None:
-            self.marker = {}
-            a = 1
-        else:
-            self.marker = marker
-
+                            "centerOfMass": 13}
         if time is None:
             self.time = []
         else:
@@ -136,9 +128,13 @@ class MVNX:
         self.root = tree.getroot()
         self.ns = self.namespace(self.root)
         self.mvn = self.root.find(self.ns + 'mvn')
+        # self.version = self.root[0].attrib['version']
         self.version = self.mvn.attrib['version']
+        # self.build = self.root[0].attrib['build']
         self.build = self.mvn.attrib['build']
+        # self.comment = self.root[1].text
         self.comment = self.root.find(self.ns + 'comment').text
+        # self.label = self.root[2].attrib['label']
         self.subject = self.root.find(self.ns + 'subject')
         self.label = self.subject.attrib['label']
         self.frameRate = self.subject.attrib['frameRate']
@@ -156,11 +152,11 @@ class MVNX:
             print("No user scenarios for subject provided. Using multiLevel as default.")
             self.configuration = "multiLevel"
 
-        self.securityCode = self.root.find(self.ns + 'securityCode').attrib['code']
+        self.securityCode = self.root.find(
+            self.ns + 'securityCode').attrib['code']
         return self.root
 
     def parse_modality(self, modality):
-
         """[With a given XML Tree, parse out the salient modalities within each frame]
 
         Args:
@@ -168,13 +164,19 @@ class MVNX:
             modality ([string]): [the name of the modality]
 
         """
+        print("\n ... parsing {}".format(modality))
 
         holding_list = []
+        # frames = self.root[2][6]
         frames = self.subject.find(self.ns + 'frames')
         for frame in tqdm(frames[3:]):
             for child in frame[self.mapping[modality]:self.mapping[modality] + 1]:
                 holding_list.append(child.text.split(' '))
-        holding_list = np.array(holding_list)
+        try:
+            holding_list = np.array(holding_list)
+        except:
+            print("Ignoring element, since its dimension are inconsistent in XML file.")
+            return None
         try:
             holding_list = holding_list.astype(float)
         except:
@@ -197,7 +199,7 @@ class MVNX:
     def parse_timecode(self):
         frames = self.subject.find(self.ns + 'frames')[3:]
         for frame in tqdm(frames):
-            if 'tc' in  frame.attrib:
+            if 'tc' in frame.attrib:
                 self.timecode.append(frame.attrib['tc'])
             else:
                 self.timecode.append('')
@@ -218,7 +220,9 @@ class MVNX:
             return self.parse_modality(arg)
 
     def parse_sensors(self):
-        sensors =  self.subject.find(self.ns + 'sensors')
+        # sensors = self.root[2][2]
+
+        sensors = self.subject.find(self.ns + 'sensors')
         if sensors:
 
             for sensor in tqdm(self.root[2][2]):
@@ -228,6 +232,8 @@ class MVNX:
             return None
 
     def parse_segments(self):
+        # segments = self.root[2][1]
+
         segments = self.subject.find(self.ns + 'segments')
 
         if segments:
@@ -239,28 +245,17 @@ class MVNX:
 
     def parse_joints(self):
 
+        # joints = self.root[2][3]
+
         joints = self.subject.find(self.ns + 'joints')
 
         if joints:
             for joint in tqdm(joints):
-                self.joints[joint.attrib['label']] = [joint[0].text, joint[1].text]
+                self.joints[joint.attrib['label']] = [
+                    joint[0].text, joint[1].text]
             return self.joints
         else:
             return None
-
-    def parse_marker(self):
-
-        self.marker = {}
-        frames = self.subject.find(self.ns + 'frames')[3:]
-        # TODO if has marker
-        for frame in tqdm(frames):
-            marker_text = frame.find(self.ns + 'marker')
-            if marker_text is not None:
-                i = frame.attrib['index']
-
-                self.marker[i] = marker_text.text
-
-        return self.marker
 
     def parse_all(self):
         for key in tqdm(self.mapping.keys()):
@@ -271,7 +266,6 @@ class MVNX:
         self.parse_sensors()
         self.parse_timecode()
         self.parse_ms()
-        self.parse_marker()
 
     def save_to_HDF5(self, filepath):
         """Create an HDF5 file from an MVNX object.
@@ -281,9 +275,14 @@ class MVNX:
         """
         with h5py.File(f'{filepath}.hdf5', 'w') as f:
             jointAngle = f.create_dataset("jointAngle", data=self.jointAngle)
-            jointAngleXZY = f.create_dataset("jointAngleXZY", data=self.jointAngleXZY)
-            angularVelocity = f.create_dataset("angularVelocity", data=self.angularVelocity)
-            angularAcceleration = f.create_dataset("angularAcceleration", data=self.angularAcceleration)
+            jointAngleXZY = f.create_dataset(
+                "jointAngleXZY", data=self.jointAngleXZY)
+            angularVelocity = f.create_dataset(
+                "angularVelocity", data=self.angularVelocity)
+            angularAcceleration = f.create_dataset(
+                "angularAcceleration", data=self.angularAcceleration)
             position = f.create_dataset("position", data=self.position)
-            orientation = f.create_dataset("orientation", data=self.orientation)
-            centerOfMass = f.create_dataset("centerOfMass", data=self.centerOfMass)
+            orientation = f.create_dataset(
+                "orientation", data=self.orientation)
+            centerOfMass = f.create_dataset(
+                "centerOfMass", data=self.centerOfMass)
