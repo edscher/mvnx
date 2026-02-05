@@ -5,7 +5,7 @@
 [![Downloads](https://pepy.tech/badge/mvnx/month)](https://pepy.tech/project/mvnx)
 [![Downloads](https://pepy.tech/badge/mvnx/week)](https://pepy.tech/project/mvnx)
 
-You can install the library using `pip install mvnx`
+You can install the library using `pip install git+https://github.com/edscher/mvnx `
 
 The simplest way to run the tool is in the following way:
 
