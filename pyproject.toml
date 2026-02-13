@@ -10,7 +10,7 @@ readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.6"
 license = { text = "MIT" }
 authors = [
-    { name = "Ed", email = "user.7o7gor2bhvp80073@tu-dresden.de" }
+    { name = "edscher", email = "user.7o7gor2bhvp80073@tu-dresden.de" }
 ]
 urls = { Homepage = "https://github.com/edscher/mvnx" }
 
@@ -25,6 +25,18 @@ dependencies = [
     "tqdm",
     "h5py"
 ]
+
+[tool.poetry]
+name = "mvnx"
+version = "0.1.18"
+description = "tba"
+authors = ["edscher <user.7o7gor2bhvp80073@tu-dresden.de>"]
+
+[tool.poetry.dependencies]
+python = ">=3.6"
+numpy = "*"
+tqdm = "*"
+h5py = "*"
 
 [project.scripts]
 mvnx = "mvnx:main"
