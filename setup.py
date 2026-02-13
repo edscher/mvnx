@@ -20,7 +20,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     packages=find_packages(),
-    install_requires=['numpy', 'argparse'],
+    install_requires=['numpy', 'argparse','tqdm'],
     entry_points = {
         'console_scripts': [
             'mvnx=mvnx:main'
