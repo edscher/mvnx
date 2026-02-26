@@ -101,6 +101,7 @@ class MVNX:
         self.userScenario = userScenario
         self.securityCode = securityCode
         self.modality = modality
+        self.identity = self.get_identity_pos(path)
         if path is None:
             print('Please supply a path')
         self.path = path
@@ -155,6 +156,26 @@ class MVNX:
         self.securityCode = self.root.find(
             self.ns + 'securityCode').attrib['code']
         return self.root
+    
+    def get_identity_pos(self,path):
+        tree = ET.parse(path)
+        self.root = tree.getroot()
+        self.ns = self.namespace(self.root)
+
+        #find frame in frames, which has time="0" and type="identity".
+        identity_pos = None
+        frames = self.root.find(self.ns + 'subject').find(self.ns + 'frames')
+        for i, frame in enumerate(frames):
+            if frame.attrib.get('time') == '0' and frame.attrib.get('type') == 'identity':
+                # convert element "position" of this frame to array (separator = " ")
+                id_pos_array = np.array(frame.find(self.ns + 'position').text.split(' ')).astype(float)                
+                # return array
+                return id_pos_array
+                
+        
+        print("No identity frame found in the MVNX file.")
+        return None
+        
 
     def parse_modality(self, modality):
         """[With a given XML Tree, parse out the salient modalities within each frame]
